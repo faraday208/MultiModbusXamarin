@@ -5,5 +5,15 @@
 
     <StackLayout>
         <Label x:Name="lblreturn"></Label>
+
+        <StackLayout Orientation="Horizontal">
+            <Entry Keyboard="Numeric" x:Name="entryAddress">
+            </Entry>
+            <Entry Keyboard="Numeric" x:Name="entryValue">
+            </Entry>
+            <Button Clicked="Button_Clicked">
+            </Button>
+        </StackLayout>
+        <Label x:Name="lblWriteReturn"></Label>
     </StackLayout>
 </ContentPage>

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Net.Sockets;
 using System.Text;
+using System.Xml.Linq;
 using Xamarin.Forms;
 
 namespace ModbusXamarinDeneme
@@ -10,7 +11,7 @@ namespace ModbusXamarinDeneme
     {
         private Int16 transactionID = 1;
         private Int16 registerCount = 30;
-        private string result;
+        public string result;
 
         public string Result
         {
@@ -19,6 +20,18 @@ namespace ModbusXamarinDeneme
             {
                 result = value;
                 OnPropertyChanged("Result");
+            }
+        }
+
+        public string writeResult;
+
+        public string WriteResult
+        {
+            get { return writeResult; }
+            set
+            {
+                writeResult = value;
+                OnPropertyChanged("WriteResult");
             }
         }
 
@@ -54,11 +67,66 @@ namespace ModbusXamarinDeneme
                 Source = this,
             };
             lblreturn.SetBinding(Label.TextProperty, a);
+            lblWriteReturn.SetBinding(Label.TextProperty, new Binding { Path = "WriteResult", Source = this });
             Device.StartTimer(TimeSpan.FromSeconds(2), () =>
             {
                 ReadData();
                 return true;
             });
+        }
+
+        private void WriteSingleRegister(Int16 address, Int16 value)
+        {
+            Byte[] data = new Byte[12];
+            Byte[] rData = new byte[12];
+
+            Byte[] tBytes = ConvertInt16ToByteArray(transactionID);
+            Byte[] ABytes = ConvertInt16ToByteArray(address);
+            Byte[] VBytes = ConvertInt16ToByteArray(value);
+            data[0] = tBytes[0];
+            data[1] = tBytes[1];
+            data[2] = 0x00;
+            data[3] = 0x00;
+            data[4] = 0x00;
+            data[5] = 0x06;
+            data[6] = 0x01;
+            data[7] = 0x06;
+            data[8] = ABytes[0];
+            data[9] = ABytes[1];
+            data[10] = VBytes[0];
+            data[11] = VBytes[1];
+
+            if (App.Clients[0].Connected)
+            {
+                NetworkStream networkStream = App.Clients[0].GetStream();
+                networkStream.Write(data, 0, data.Length);
+                while (true)
+                {
+                    int bytes = networkStream.Read(rData, 0, rData.Length);
+                    if (bytes > 0)
+                    {
+                        int[] res = new int[2];
+                        if (!data[0].Equals(rData[0]) || !data[1].Equals(rData[1]) || !data[10].Equals(rData[10]) || !data[11].Equals(rData[11]))
+                        {
+                            break;
+                        }
+
+                        res[0] = Convert.ToInt16(rData[8]) * 256 + Convert.ToInt16(rData[9]);
+                        res[1] = Convert.ToInt16(rData[10]) * 256 + Convert.ToInt16(rData[11]);
+                        string sb = "İşlem Tamam:" + res[0].ToString() + "nolu kayıt " + res[1].ToString() + " olarak değiştirildi";
+
+                        WriteResult = sb;
+                        break;
+                    }
+                }
+                //networkStream.Close();
+                transactionID++;
+            }
+            else
+            {
+                App.Clients[0] = new TcpClient(App.serverIP, 502);
+                ReadData();
+            }
         }
 
         private void ReadData()
@@ -98,17 +166,27 @@ namespace ModbusXamarinDeneme
                     int bytes = networkStream.Read(rData, 0, rData.Length);
                     if (bytes > 0)
                     {
-                        StringBuilder sb = new StringBuilder(rData.Length * 2);
-                        foreach (Byte b in rData)
+                        int[] res = new int[registerCount];
+                        if (!data[0].Equals(rData[0]) || !data[1].Equals(rData[1]))
                         {
-                            sb.AppendFormat("0x{0:x2}-", b);
+                            break;
                         }
-                        Console.WriteLine($"Gelen Data: {sb}");
-                        lblreturn.Text = $"Gelen Data: {sb}";
+                        for (int i = 0; i < registerCount; i++)
+                        {
+                            res[i] = Convert.ToInt16(rData[9 + (i * 2)]) * 256 + Convert.ToInt16(rData[10 + (i * 2)]);
+                        }
+                        string sb = "Gelen Data:{";
+                        foreach (int b in res)
+                        {
+                            sb += b.ToString() + "-";
+                        }
+                        sb += "}";
+
+                        Result = sb;
                         break;
                     }
                 }
-                networkStream.Close();
+                //networkStream.Close();
                 transactionID++;
             }
             else
@@ -124,6 +202,11 @@ namespace ModbusXamarinDeneme
             if (BitConverter.IsLittleEndian)
                 Array.Reverse(intBytes);
             return intBytes;
+        }
+
+        private void Button_Clicked(object sender, EventArgs e)
+        {
+            WriteSingleRegister(Convert.ToInt16(entryAddress.Text), Convert.ToInt16(entryValue.Text));
         }
     }
 }

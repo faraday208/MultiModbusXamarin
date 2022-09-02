@@ -7,10 +7,9 @@ namespace ModbusXamarinDeneme
 {
     public partial class App : Application
     {
-        public static string serverIP = "192.168.1.10";
+        public static string serverIP = "192.168.1.150";
         public static bool[] ConnectionOks;
         public static TcpClient[] Clients;
-        private int port = 5000;
 
         public App()
         {
