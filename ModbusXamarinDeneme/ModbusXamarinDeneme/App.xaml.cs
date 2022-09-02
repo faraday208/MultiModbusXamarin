@@ -7,14 +7,21 @@ namespace ModbusXamarinDeneme
 {
     public partial class App : Application
     {
-        public static string serverIP = "192.168.1.150";
-        public static bool[] ConnectionOks;
-        public static TcpClient[] Clients;
+        public static string[] IPS
+        {
+            get
+            {
+                return new string[]
+                {
+                    "192.168.1.150","192.168.1.32","192.168.1.35"
+                };
+            }
+        }
+        public static TcpClient[] Clients { get; set; }
 
         public App()
         {
-            Clients = new TcpClient[1];
-            ConnectionOks = new Boolean[1];
+            Clients = new TcpClient[3];
             InitializeComponent();
             CreateTCPIP();
 
@@ -23,7 +30,11 @@ namespace ModbusXamarinDeneme
 
         public void CreateTCPIP()
         {
-            Clients[0] = new TcpClient(serverIP, 502);
+            Clients[0] = new TcpClient(IPS[0], 502);
+
+            Clients[1] = new TcpClient(IPS[1], 502);
+
+            Clients[2] = new TcpClient(IPS[2], 502);
         }
 
         protected override void OnStart()

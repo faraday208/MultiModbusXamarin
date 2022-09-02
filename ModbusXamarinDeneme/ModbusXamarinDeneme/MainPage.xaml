@@ -1,19 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="ModbusXamarinDeneme.MainPage">
+<ContentPage
+    x:Class="ModbusXamarinDeneme.MainPage"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <StackLayout>
-        <Label x:Name="lblreturn"></Label>
+        <Label x:Name="lblreturn1" />
+        <Label x:Name="lblreturn1t" />
+        <Label x:Name="lblreturn2" />
+        <Label x:Name="lblreturn2t" />
+        <Label x:Name="lblreturn3" />
+        <Label x:Name="lblreturn3t" />
 
         <StackLayout Orientation="Horizontal">
-            <Entry Keyboard="Numeric" x:Name="entryAddress">
-            </Entry>
-            <Entry Keyboard="Numeric" x:Name="entryValue">
-            </Entry>
-            <Button Clicked="Button_Clicked">
-            </Button>
+            <Entry
+                x:Name="entryCard"
+                Keyboard="Numeric"
+                WidthRequest="200" />
+            <Entry
+                x:Name="entryAddress"
+                Keyboard="Numeric"
+                WidthRequest="200" />
+            <Entry
+                x:Name="entryValue"
+                Keyboard="Numeric"
+                WidthRequest="200" />
+            <Button Clicked="Button_Clicked" />
         </StackLayout>
-        <Label x:Name="lblWriteReturn"></Label>
+        <Label x:Name="lblWriteReturn" />
     </StackLayout>
 </ContentPage>
